@@ -1,0 +1,52 @@
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v2.3.0
+  hooks:
+  # --------------------
+  # General
+  # checks for files that would conflict in case-insensitive filesystems
+  - id: check-case-conflict
+  # ensures that a file is either empty, or ends with one newline
+  - id: end-of-file-fixer
+  # replaces or checks mixed line ending
+  - id: mixed-line-ending
+  # trims trailing whitespace
+  - id: trailing-whitespace
+
+  # --------------------
+  # Git
+  # checks for files that contain merge conflict strings
+  - id: check-merge-conflict
+
+  # --------------------
+  # JSON
+  # checks json files for parseable syntax
+  - id: check-json
+
+  # --------------------
+  # Python
+  # sorts entries in requirements.txt
+  - id: requirements-txt-fixer
+
+  # --------------------
+  # Security
+  # detects the presence of private keys
+  - id: detect-private-key
+
+  # --------------------
+  # YAML
+  # checks yaml files for parseable syntax
+  - id: check-yaml
+
+- repo: https://github.com/psf/black
+  rev: 22.3.0
+  hooks:
+  - id: black
+
+- repo: https://github.com/jumanjihouse/pre-commit-hooks
+  rev: 3.0.0
+  hooks:
+  # Shell scripts conform to shellcheck
+  - id: shellcheck
+  # Check shell style with shfmt
+  - id: shfmt
