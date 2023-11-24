@@ -2,7 +2,13 @@ import copy
 import enum
 
 from itertools import product
-from typing import Any, Callable, Dict, List, Set
+from typing import List
+from ytestit_common.types import (
+    Type_PossibleValues,
+    Type_VariableValues,
+    Type_ConstraintFunction,
+    Type_Constraints,
+)
 
 
 class Node(object):
@@ -17,35 +23,6 @@ class ConstraintResult(enum.IntEnum):
     DISCARD = 1
     # Keep the current test case.
     KEEP = 2
-
-
-Type_PossibleValues = Dict[
-    str,  # variable name
-    List[Any],  # variable's all possible values
-]
-
-
-Type_VariableValues = Dict[
-    str,  # variable name
-    Any,  # variable value
-]
-
-
-Type_ConstraintFunction = Callable[
-    # Constraint function input parameters
-    [
-        str,  # variable name
-        Any,  # variable value
-        Type_VariableValues,  # current values of the other variables.
-    ],
-    # Constraint function return type
-    ConstraintResult,
-]
-
-Type_Constraints = Dict[
-    str,  # constraint name
-    Type_ConstraintFunction,  # constraint function
-]
 
 
 def full_combinatorial(
