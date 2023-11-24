@@ -1,0 +1,3 @@
+#!/bin/sh
+
+PYTHONPATH="$PWD/src:$PYTHONPATH" python3 -m zuustand.main ${1+"$@"}
