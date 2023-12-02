@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Set
+from typing import Any, Callable, Dict, List
 from ytestit_common.constraints import ConstraintResult
 
 
