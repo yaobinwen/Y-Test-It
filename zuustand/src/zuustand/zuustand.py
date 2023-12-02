@@ -3,78 +3,69 @@
 
 import copy
 
-from typing import List
+from typing import Any, Dict, List, Tuple
 
 
 from ytestit_common.constraints import ConstraintResult
 from ytestit_common.types import (
     Type_PossibleValues,
     Type_VariableValues,
+    Type_State,
     Type_ConstraintFunction,
     Type_Constraints,
 )
 
 
-class TransitionBase(object):
-    def __init__(self, changes):
-        # Changes that cause this transition.
-        self.changes = changes
-
-
-class InTransition(TransitionBase):
-    def __init__(self, source, changes):
-        super().__init__(changes=changes)
-
-        self.source = source
-
-    def __str__(self):
-        return f"<- {self.source.state}"
-
-    def __repr__(self):
-        return str(self)
-
-
-class OutTransition(TransitionBase):
-    def __init__(self, dest, changes):
-        super().__init__(changes=changes)
-
-        self.dest = dest
-
-    def __str__(self):
-        return f"-> {self.dest.state}"
-
-    def __repr__(self):
-        return str(self)
-
-
-class Vertex(object):
-    def __init__(self, vid: int, state):
-        self.vid = vid
-        self.state = state
-        # The IDs of the graph that point to this vertex.
-        self.ins = {}
-        # The IDs of the graph that this vertex points to.
-        self.outs = {}
-
-    def add_in_trans(self, source, changes):
-        self.ins[source.vid] = InTransition(source=source, changes=changes)
-
-    def add_out_trans(self, dest, changes):
-        self.outs[dest.vid] = OutTransition(dest=dest, changes=changes)
-
-
 class ValueChange(object):
-    def __init__(self, var, from_value, to_value):
+    """Record the change of the variable's value."""
+
+    def __init__(
+        self,
+        var: str,  # Variable's name
+        from_value: Any,  # Variable's original value
+        to_value: Any,  # Variable's new value
+    ):
         self.var = var
         self.from_value = from_value
         self.to_value = to_value
 
+    def __str__(self) -> str:
+        return f"ValueChange(var={self.var} from={self.from_value} to={self.to_value})"
 
-def compare_states(state_from, state_to):
+    def __repr__(self) -> str:
+        return str(self)
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, ValueChange):
+            return (self.var, self.from_value, self.to_value) == (
+                other.var,
+                other.from_value,
+                other.to_value,
+            )
+
+        return NotImplemented
+
+    def __ne__(self, other: object) -> bool:
+        return not (self == other)
+
+
+Type_ChangedValues = Dict[str, ValueChange]
+Type_UnchangedValues = Type_VariableValues
+
+
+def compare_states(
+    state_from: Type_State,
+    state_to: Type_State,
+) -> Tuple[Type_ChangedValues, Type_UnchangedValues]:
+    """Compare two states and return the changed states and unchanged states."""
+
     keys1 = set(state_from.keys())
     keys2 = set(state_to.keys())
     if keys1 != keys2:
-        raise ValueError(f"'{state1}' and '{state2}' have different keys")
+        # NOTE(ywen): For now, we require `state_from` and `state_to` have the
+        # same set of keys. In the future, we could support having a different
+        # set of keys and figure out "added" and "removed".
+        raise ValueError(f"'{state_from}' and '{state_to}' have different keys")
 
     changed = {}
     unchanged = {}
@@ -89,6 +80,118 @@ def compare_states(state_from, state_to):
     return changed, unchanged
 
 
+class Vertex(object):
+    """A vertex that contains the key information: its ID and the state that it
+    represents.
+    """
+
+    def __init__(self, vid: int, state: Type_State):
+        self.vid = vid
+        self.state = state
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Vertex):
+            return (self.vid, self.state) == (other.vid, other.state)
+
+        return NotImplemented
+
+    def __ne__(self, other: object) -> bool:
+        return not (self == other)
+
+
+class TransitionBase(object):
+    """Base class of a transition between two vertices."""
+
+    def __init__(self, changes: Type_ChangedValues):
+        # Changes that cause this transition.
+        self.changes = changes
+
+    def __str__(self):
+        return f"TransitionBase(changes={self.changes})"
+
+    def __repr__(self):
+        return str(self)
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, TransitionBase):
+            return self.changes == other.changes
+
+        return NotImplemented
+
+    def __ne__(self, other: object) -> bool:
+        return not (self == other)
+
+
+class InTransition(TransitionBase):
+    """An "in" transition that describes the transition from another vertex to
+    the vertex that owns this in-transition.
+    """
+
+    def __init__(self, source: Vertex, changes: Type_ChangedValues):
+        super().__init__(changes=changes)
+
+        self.source = source
+
+    def __str__(self):
+        return f"<- Vertex(vid={self.source.vid})"
+
+    def __repr__(self):
+        return str(self)
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, InTransition):
+            return (self.source, self.changes) == (other.source, other.changes)
+
+        return NotImplemented
+
+    def __ne__(self, other: object) -> bool:
+        return not (self == other)
+
+
+class OutTransition(TransitionBase):
+    """An "out" transition that describes the transition from the vertex that
+    owns this out-transition to another vertex.
+    """
+
+    def __init__(self, dest: Vertex, changes: Type_ChangedValues):
+        super().__init__(changes=changes)
+
+        self.dest = dest
+
+    def __str__(self):
+        return f"-> Vertex(vid={self.dest.vid})"
+
+    def __repr__(self):
+        return str(self)
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, OutTransition):
+            return (self.dest, self.changes) == (other.dest, other.changes)
+
+        return NotImplemented
+
+    def __ne__(self, other: object) -> bool:
+        return not (self == other)
+
+
+class VertexWithTransitions(Vertex):
+    """A vertex as well as its in-/out-transitions to other vertices."""
+
+    def __init__(self, vid: int, state: Type_State):
+        super().__init__(vid=vid, state=state)
+
+        # The IDs of the graph that point to this vertex.
+        self.ins = {}
+        # The IDs of the graph that this vertex points to.
+        self.outs = {}
+
+    def add_in_trans(self, source: Vertex, changes: Type_ChangedValues):
+        self.ins[source.vid] = InTransition(source=source, changes=changes)
+
+    def add_out_trans(self, dest: Vertex, changes: Type_ChangedValues):
+        self.outs[dest.vid] = OutTransition(dest=dest, changes=changes)
+
+
 def zuustand(
     possible_states,
     constraints,
@@ -97,7 +200,7 @@ def zuustand(
     graph = {}
 
     for state in possible_states:
-        v = Vertex(vid=next_vid, state=state)
+        v = VertexWithTransitions(vid=next_vid, state=state)
         graph[v.vid] = v
 
         next_vid += 1

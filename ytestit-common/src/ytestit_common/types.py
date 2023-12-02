@@ -14,6 +14,10 @@ Type_VariableValues = Dict[
 ]
 
 
+# A "state" is a particular set of values of all the variables.
+Type_State = Type_VariableValues
+
+
 Type_ConstraintFunction = Callable[
     # Constraint function input parameters
     [
