@@ -6,7 +6,6 @@ from typing import List
 from ytestit_common.types import (
     Type_PossibleValues,
     Type_VariableValues,
-    Type_ConstraintFunction,
     Type_Constraints,
 )
 
