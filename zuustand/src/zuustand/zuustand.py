@@ -185,6 +185,12 @@ class VertexWithTransitions(Vertex):
         # The IDs of the graph that this vertex points to.
         self.outs = {}
 
+    def __str__(self):
+        return f"VertexWithTransitions(vid={self.vid} state={self.state})"
+
+    def __repr__(self):
+        return str(self)
+
     def add_in_trans(self, source: Vertex, changes: Type_ChangedValues):
         self.ins[source.vid] = InTransition(source=source, changes=changes)
 
@@ -192,20 +198,48 @@ class VertexWithTransitions(Vertex):
         self.outs[dest.vid] = OutTransition(dest=dest, changes=changes)
 
 
+# A state transition graph, including all the possible states. Note that this
+# graph may not be fully connected and may (or may not) have isolated
+# sub-graphs. (See class SubGraph.)
+Type_Graph = Dict[
+    # vertex ID
+    int,
+    VertexWithTransitions,
+]
+
+
 def generate_transition_graph(
-    possible_states,
-    constraints,
-):
-    next_vid = 1
+    possible_states: List[Type_State],
+    constraints: Type_Constraints,
+) -> Type_Graph:
+    """Given the possible states and the constraints on the transitions,
+    generate the graph of all the valid state transitions.
+    """
+
     graph = {}
 
+    # The vertex ID for the next vertex that's added to the graph. The vertex
+    # IDs are unique only within the same graph.
+    next_vid = 1
+
+    # Initialize the graph. Because this graph is about all the valid state
+    # transitions, it should surely include all the possible states (i.e., the
+    # vertices), so we firstly add all the vertices into it. We use the class
+    # `VertexWithTransitions` so we can add state transitions to the vertices
+    # later.
     for state in possible_states:
         v = VertexWithTransitions(vid=next_vid, state=state)
         graph[v.vid] = v
-
         next_vid += 1
 
     vid_set = set(graph.keys())
+
+    # We loop through the entire set of vertices in two levels. The vertices in
+    # the outer loop are seen as the "sources"; the vertices in the inner loop
+    # are seen as the "destinations". The transition from one source to each
+    # destination is then examine to determine if it's a valid one (i.e., not
+    # violating any constraints). If it is a valid one, the transition is then
+    # added to the vertices.
     for src_vid in vid_set:
         for dst_vid in vid_set:
             src_v = graph[src_vid]
@@ -224,7 +258,12 @@ def generate_transition_graph(
                     break
                 else:
                     if ret != ConstraintResult.KEEP:
-                        raise ValueError(f"constraint must return DISCARD or KEEP")
+                        raise ValueError(
+                            f"constraint '{cons_name}' "
+                            "must return either 'ConstraintResult.DISCARD' "
+                            "or 'ConstraintResult.KEEP' "
+                            f"but actually returned '{ret}'"
+                        )
 
             if discard:
                 continue

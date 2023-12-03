@@ -9,6 +9,7 @@ from zuustand.zuustand import (
     InTransition,
     OutTransition,
     VertexWithTransitions,
+    generate_transition_graph,
 )
 
 
@@ -264,6 +265,14 @@ class TestVertexWithTransitions(unittest.TestCase):
         self.assertDictEqual(vt.ins, {})
         self.assertDictEqual(vt.outs, {})
 
+    def test___str__(self):
+        vt = VertexWithTransitions(vid=24, state={"A": 1})
+        self.assertEqual(str(vt), "VertexWithTransitions(vid=24 state={'A': 1})")
+
+    def test___repr__(self):
+        vt = VertexWithTransitions(vid=24, state={"A": 1})
+        self.assertEqual(repr(vt), "VertexWithTransitions(vid=24 state={'A': 1})")
+
     def test_add_in_trans(self):
         vt = VertexWithTransitions(vid=23, state={"A": 1})
 
@@ -283,6 +292,69 @@ class TestVertexWithTransitions(unittest.TestCase):
 
         out_trans = OutTransition(dest=dest, changes=changed)
         self.assertDictEqual(vt.outs, {dest.vid: out_trans})
+
+
+class Test_generate_transition_graph_0_constraints(unittest.TestCase):
+    def test_0_state(self):
+        g = generate_transition_graph(
+            possible_states=[],
+            constraints={},
+        )
+        self.assertDictEqual(g, {})
+
+    def test_1_state(self):
+        g = generate_transition_graph(
+            possible_states=[{"A": 10}],
+            constraints={},
+        )
+
+        vid1 = 1
+        self.assertDictEqual(g, {vid1: VertexWithTransitions(vid=1, state={"A": 10})})
+
+        vt1 = g[vid1]
+
+        # Vertex 1 has only one in-transition.
+        self.assertEqual(len(vt1.ins), 1)
+        # This only in-transition is from itself to itself.
+        self.assertIn(vid1, vt1.ins)
+
+        # Similarly, vertex 1 has only one out-transition.
+        self.assertEqual(len(vt1.outs), 1)
+        # This only out-transition is from itself to itself.
+        self.assertIn(vid1, vt1.outs)
+
+    def test_2_states(self):
+        g = generate_transition_graph(
+            possible_states=[{"A": 10}, {"A": 20}],
+            constraints={},
+        )
+
+        vid1 = 1
+        vid2 = 2
+        self.assertDictEqual(
+            g,
+            {
+                vid1: VertexWithTransitions(vid=1, state={"A": 10}),
+                vid2: VertexWithTransitions(vid=2, state={"A": 20}),
+            },
+        )
+
+        # "vt" means "vertex with transitions"
+        vt1 = g[vid1]
+
+        # Vertex 1 has two in-transition.
+        self.assertEqual(len(vt1.ins), 2)
+        # The first in-transition is from itself to itself.
+        self.assertIn(vid1, vt1.ins)
+        # The second in-transition is from vertex 2 to vertex 1.
+        self.assertIn(vid2, vt1.ins)
+
+        # Similarly, vertex 2 has two out-transition.
+        self.assertEqual(len(vt1.outs), 2)
+        # The first out-transition is from itself to itself.
+        self.assertIn(vid1, vt1.outs)
+        # The second out-transition is from vertex 1 to vertex 2.
+        self.assertIn(vid2, vt1.outs)
 
 
 if __name__ == "__main__":
