@@ -3,7 +3,7 @@
 
 from ytestit_common.constraints import ConstraintResult
 from zuustand.zuustand import (
-    zuustand,
+    generate_transition_graph,
     partition_and_find_shortest_paths,
     find_all_edge_paths,
 )
@@ -46,7 +46,7 @@ CONSTRAINTS = {
 }
 
 
-graph = zuustand(
+graph = generate_transition_graph(
     possible_states=POSSIBLE_STATES,
     constraints=CONSTRAINTS,
 )

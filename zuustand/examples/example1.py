@@ -2,7 +2,10 @@
 
 
 from ytestit_common.constraints import ConstraintResult
-from zuustand.zuustand import zuustand, partition_and_find_shortest_paths
+from zuustand.zuustand import (
+    generate_transition_graph,
+    partition_and_find_shortest_paths,
+)
 
 
 POSSIBLE_STATES = [
@@ -22,7 +25,7 @@ CONSTRAINTS = {
 }
 
 
-graph = zuustand(
+graph = generate_transition_graph(
     possible_states=POSSIBLE_STATES,
     constraints=CONSTRAINTS,
 )

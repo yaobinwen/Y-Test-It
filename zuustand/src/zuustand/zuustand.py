@@ -192,7 +192,7 @@ class VertexWithTransitions(Vertex):
         self.outs[dest.vid] = OutTransition(dest=dest, changes=changes)
 
 
-def zuustand(
+def generate_transition_graph(
     possible_states,
     constraints,
 ):
