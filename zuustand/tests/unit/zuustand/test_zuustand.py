@@ -11,6 +11,7 @@ from zuustand.zuustand import (
     OutTransition,
     VertexWithTransitions,
     generate_transition_graph,
+    SubGraphWithStartingVertex,
 )
 
 
@@ -370,7 +371,7 @@ class Test_generate_transition_graph_some_constraints(unittest.TestCase):
         )
         self.assertDictEqual(g, {})
 
-    def test_1_state(self):
+    def test_1_state_with_valid_constaint_functions(self):
         def cons_no_self_pointing(
             src_vertex, dest_vertex, changed_values, unchanged_values
         ):
@@ -399,6 +400,35 @@ class Test_generate_transition_graph_some_constraints(unittest.TestCase):
         # Similarly, vertex 1 has no out-transition because of the
         # no-self-pointing constraint.
         self.assertEqual(len(vt1.outs), 0)
+
+    def test_1_state_with_invalid_constraint_functions(self):
+        def cons_invalid(src_vertex, dest_vertex, changed_values, unchanged_values):
+            # A constraint function is supposed to return a ConstraintResult
+            # enum value.
+            return "invalid return value"
+
+        err_msg = (
+            "constraint 'cons_invalid' must return either "
+            "'ConstraintResult.DISCARD' or 'ConstraintResult.KEEP' "
+            "but actually returned 'invalid return value'"
+        )
+
+        self.assertRaisesRegex(
+            ValueError,
+            err_msg,
+            generate_transition_graph,
+            possible_states=[{"A": 10}],
+            constraints={
+                "cons_invalid": cons_invalid,
+            },
+        )
+
+
+class TestSubGraph(unittest.TestCase):
+    def test___init__(self):
+        sg = SubGraphWithStartingVertex(starting_vertex_id=19)
+        self.assertEqual(sg.starting_vertex_id, 19)
+        self.assertSetEqual(sg.vertex_ids, set())
 
 
 if __name__ == "__main__":
