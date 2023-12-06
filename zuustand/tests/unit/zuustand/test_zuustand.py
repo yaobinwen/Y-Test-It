@@ -1,6 +1,7 @@
 import unittest
 
 from unittest.mock import Mock
+from ytestit_common.constraints import ConstraintResult
 from zuustand.zuustand import (
     ValueChange,
     compare_states,
@@ -355,6 +356,49 @@ class Test_generate_transition_graph_0_constraints(unittest.TestCase):
         self.assertIn(vid1, vt1.outs)
         # The second out-transition is from vertex 1 to vertex 2.
         self.assertIn(vid2, vt1.outs)
+
+
+class Test_generate_transition_graph_some_constraints(unittest.TestCase):
+    def test_0_state(self):
+        g = generate_transition_graph(
+            possible_states=[],
+            constraints={
+                # With zero states, the constraint functions don't really
+                # matter.
+                "cons_func": lambda _1, _2: ConstraintResult.DISCARD,
+            },
+        )
+        self.assertDictEqual(g, {})
+
+    def test_1_state(self):
+        def cons_no_self_pointing(
+            src_vertex, dest_vertex, changed_values, unchanged_values
+        ):
+            return (
+                ConstraintResult.DISCARD
+                if src_vertex.vid == dest_vertex.vid
+                else ConstraintResult.KEEP
+            )
+
+        g = generate_transition_graph(
+            possible_states=[{"A": 10}],
+            constraints={
+                "cons_no_self_pointing": cons_no_self_pointing,
+            },
+        )
+
+        vid1 = 1
+        self.assertDictEqual(g, {vid1: VertexWithTransitions(vid=1, state={"A": 10})})
+
+        vt1 = g[vid1]
+
+        # Vertex 1 has no in-transition because of the no-self-pointing
+        # constraint.
+        self.assertEqual(len(vt1.ins), 0)
+
+        # Similarly, vertex 1 has no out-transition because of the
+        # no-self-pointing constraint.
+        self.assertEqual(len(vt1.outs), 0)
 
 
 if __name__ == "__main__":
