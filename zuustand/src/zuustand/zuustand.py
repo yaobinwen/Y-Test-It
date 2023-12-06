@@ -197,7 +197,7 @@ class VertexWithTransitions(Vertex):
 
 # A state transition graph, including all the possible states. Note that this
 # graph may not be fully connected and may (or may not) have isolated
-# sub-graphs. (See class SubGraph.)
+# sub-graphs. (See class SubGraphWithStartingVertex.)
 Type_Graph = Dict[
     # vertex ID
     int,
@@ -295,13 +295,18 @@ def generate_transition_graph(
     return graph
 
 
-class SubGraph(object):
-    def __init__(self, starting_vertex_id):
+class SubGraphWithStartingVertex(object):
+    def __init__(self, starting_vertex_id: int):
         self.starting_vertex_id = starting_vertex_id
+
+        # The IDs of the vertices that belong to this subgraph.
         self.vertex_ids = set()
 
 
 def _select_starting_vertex_id(candidates, unvisited):
+    """Among all the candidate starting vertices, select the next one that has
+    not been visited yet as the next starting vertex in the current sub-graph.
+    """
     while candidates:
         cand = candidates.pop(0)
         if cand in unvisited:
@@ -344,7 +349,7 @@ def partition_and_find_shortest_paths(
             unvisited=unvisited_vertices,
         )
 
-        g = SubGraph(starting_vertex_id=starting_vertex_id)
+        g = SubGraphWithStartingVertex(starting_vertex_id=starting_vertex_id)
 
         curr_queue = [starting_vertex_id]
         next_queue = []
