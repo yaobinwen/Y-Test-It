@@ -3,16 +3,13 @@
 
 import copy
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Tuple
 
 
 from ytestit_common.constraints import ConstraintResult
 from ytestit_common.types import (
-    Type_PossibleValues,
     Type_VariableValues,
     Type_State,
-    Type_ConstraintFunction,
-    Type_Constraints,
 )
 
 
@@ -208,6 +205,24 @@ Type_Graph = Dict[
 ]
 
 
+Type_ConstraintFunction = Callable[
+    # Constraint function input parameters
+    [
+        VertexWithTransitions,  # source vertex
+        VertexWithTransitions,  # destination vertex
+        Type_ChangedValues,  # changed values
+        Type_UnchangedValues,  # unchanged values
+    ],
+    # Constraint function return type
+    ConstraintResult,
+]
+
+Type_Constraints = Dict[
+    str,  # constraint name
+    Type_ConstraintFunction,  # constraint function
+]
+
+
 def generate_transition_graph(
     possible_states: List[Type_State],
     constraints: Type_Constraints,
@@ -252,7 +267,12 @@ def generate_transition_graph(
 
             discard = False
             for cons_name, cons_func in constraints.items():
-                ret = cons_func(changed, unchanged)
+                ret = cons_func(
+                    src_vertex=src_v,
+                    dest_vertex=dst_v,
+                    changed_values=changed,
+                    unchanged_values=unchanged,
+                )
                 if ret == ConstraintResult.DISCARD:
                     discard = True
                     break
