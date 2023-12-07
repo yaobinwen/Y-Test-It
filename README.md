@@ -6,7 +6,13 @@
 
 This is my repository to keep notes about software testing theories and practices, as well as the code for tools.
 
-## 2. Tool: `kombii`
+## 2. Tools: `kombii` and `zuustand`
+
+The tools `kombii` and `zuustand` are suitable for some (not all) problems that can be abstracted as **finite-state machines**. See [this Wikipedia article](https://en.wikipedia.org/wiki/Finite-state_machine) and [this MDN article](https://developer.mozilla.org/en-US/docs/Glossary/State_machine) for what a finite-state machine is.
+
+A finite-state machine consists of, of course, "states". A state can be described by the particular choices of values of one or more variables.
+
+But `kombii` and `zuustand` are not tools for general state machine problems. I created them in some particular context.
 
 Given an array of variables and all their possible values, `kombii` generates combinations of all the variables of all the possible values based on given constraints (so the combinations that do not meet the constraints are dropped).
 
