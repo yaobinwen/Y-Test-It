@@ -3,7 +3,7 @@
 
 import copy
 
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Set, Tuple
 
 
 from ytestit_common.constraints import ConstraintResult
@@ -303,26 +303,26 @@ class SubGraphWithStartingVertex(object):
         self.vertex_ids = set()
 
 
-def _select_starting_vertex_id(candidates, unvisited):
+def _remove_visited_candidates(candidates: List[int], unvisited: Set[int]):
+    unvisited_candidates = []
+    for cand in candidates:
+        if cand in unvisited:
+            unvisited_candidates.append(cand)
+
+    return unvisited_candidates
+
+
+def _select_starting_vertex_id(candidates: List[int], unvisited: Set[int]):
     """Among all the candidate starting vertices, select the next one that has
     not been visited yet as the next starting vertex in the current sub-graph.
     """
-    while candidates:
-        cand = candidates.pop(0)
-        if cand in unvisited:
-            return cand
-        else:
-            # If `cand` has been visited, then we don't need to use as a
-            # starting vertex anymore so we can just drop it.
-            pass
+    if candidates:
+        return candidates.pop(0)
 
     if unvisited:
         return unvisited.pop()
 
-    raise ValueError(
-        "no starting vertex candidate available "
-        "(both 'candidates' and 'unvisited' are empty)"
-    )
+    raise ValueError("no starting vertex candidate available")
 
 
 def partition_and_find_shortest_paths(
@@ -344,6 +344,12 @@ def partition_and_find_shortest_paths(
     shortest_paths = {}
 
     while unvisited_vertices:
+        starting_candidates = _remove_visited_candidates(
+            candidates=starting_candidates,
+            unvisited=unvisited_vertices,
+        )
+
+        # Figure out the next starting vertex.
         starting_vertex_id = _select_starting_vertex_id(
             candidates=starting_candidates,
             unvisited=unvisited_vertices,
