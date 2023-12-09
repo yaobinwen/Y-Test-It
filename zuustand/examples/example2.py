@@ -18,8 +18,8 @@ POSSIBLE_STATES = [
 ]
 
 
-def cons(changed, unchanged):
-    if unchanged:
+def cons(src_vertex, dest_vertex, changed_values, unchanged_values):
+    if unchanged_values:
         # No self-pointing edges.
         return ConstraintResult.DISCARD
 
@@ -33,7 +33,7 @@ def cons(changed, unchanged):
         (5, 4),
     ]
 
-    c = changed["a"]
+    c = changed_values["a"]
     for case in keep_cases:
         if c.from_value == case[0] and c.to_value == case[1]:
             return ConstraintResult.KEEP
