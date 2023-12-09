@@ -16,8 +16,10 @@ POSSIBLE_STATES = [
 ]
 
 
-def cons_change_only_one_var(changed, unchanged):
-    return ConstraintResult.DISCARD if len(changed) != 1 else ConstraintResult.KEEP
+def cons_change_only_one_var(src_vertex, dest_vertex, changed_values, unchanged_values):
+    return (
+        ConstraintResult.DISCARD if len(changed_values) != 1 else ConstraintResult.KEEP
+    )
 
 
 CONSTRAINTS = {
