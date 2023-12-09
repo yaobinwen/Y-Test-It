@@ -320,7 +320,10 @@ def _select_starting_vertex_id(candidates: List[int], unvisited: List[int]):
         return candidates.pop(0)
 
     if unvisited:
-        return unvisited.pop(0)
+        # We shouldn't call `pop(0)` here because that means we remove the
+        # first element from `unvisited`, making it a "visited" vertex. But in
+        # fact we won't count it as "visited" until we add it to the sub-graph.
+        return unvisited[0]
 
     raise ValueError("no starting vertex candidate available")
 
@@ -371,7 +374,7 @@ def partition_and_find_shortest_paths(
                 g.vertex_ids.add(curr_vid)
 
                 # Mark the vertex of curr_vid as visited.
-                unvisited_vertices -= set([curr_vid])
+                unvisited_vertices.remove(curr_vid)
 
                 curr_v = graph[curr_vid]
                 for out_vid, out_v in curr_v.outs.items():
@@ -380,7 +383,8 @@ def partition_and_find_shortest_paths(
                         continue
 
                     next_vertex_id = out_vid
-                    next_queue.append(next_vertex_id)
+                    if next_vertex_id not in next_queue:
+                        next_queue.append(next_vertex_id)
 
                     # This assertion must hold because visiting curr_vid is a
                     # precondition of visiting its out-going vertices.
