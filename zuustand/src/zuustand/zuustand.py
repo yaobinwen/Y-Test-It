@@ -303,7 +303,7 @@ class SubGraphWithStartingVertex(object):
         self.vertex_ids = set()
 
 
-def _remove_visited_candidates(candidates: List[int], unvisited: Set[int]):
+def _remove_visited_candidates(candidates: List[int], unvisited: List[int]):
     unvisited_candidates = []
     for cand in candidates:
         if cand in unvisited:
@@ -312,7 +312,7 @@ def _remove_visited_candidates(candidates: List[int], unvisited: Set[int]):
     return unvisited_candidates
 
 
-def _select_starting_vertex_id(candidates: List[int], unvisited: Set[int]):
+def _select_starting_vertex_id(candidates: List[int], unvisited: List[int]):
     """Among all the candidate starting vertices, select the next one that has
     not been visited yet as the next starting vertex in the current sub-graph.
     """
@@ -320,7 +320,7 @@ def _select_starting_vertex_id(candidates: List[int], unvisited: Set[int]):
         return candidates.pop(0)
 
     if unvisited:
-        return unvisited.pop()
+        return unvisited.pop(0)
 
     raise ValueError("no starting vertex candidate available")
 
@@ -332,7 +332,7 @@ def partition_and_find_shortest_paths(
     # be considered as the first starting vertex).
     starting_candidates: List[int],
 ):
-    unvisited_vertices = set(graph.keys())
+    unvisited_vertices = list(graph.keys())
     subgraphs = []
 
     # Shortest paths from starting vertices to all the other vertices in the
