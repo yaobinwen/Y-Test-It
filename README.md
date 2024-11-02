@@ -85,3 +85,11 @@ In other words, pairwise testing is effective when all of the following conditio
 - The outputs of the code under test are created by the interaction of **no more than two (i.e., a pair of)** input variables.
 
 As a result, the test problems that are suitable for pairwise testing are not as many as one may think.
+
+## 5. Classification Tree Method (CTM)
+
+See [_Wikipedia: Classification Tree Method_](https://en.wikipedia.org/wiki/Classification_Tree_Method).
+
+## 6. Testing Coverage
+
+See [NASA: A Practical Tutorial on Modified Condition/Decision Coverage](https://ntrs.nasa.gov/citations/20010057789). A downloaded version is available at [`./papers/NASA-A-Practical-Tutorial-on-MCDC-Coverage.pdf`](./papers/NASA-A-Practical-Tutorial-on-MCDC-Coverage.pdf).
